@@ -256,6 +256,10 @@
                     </p>
                 </div>
                 <div class="flex gap-2">
+                    <button id="previewPdfButton"
+                        class="bg-white border border-red-200 text-red-700 font-medium px-5 py-2 rounded-lg shadow-sm transition-colors flex items-center gap-2 hover:bg-red-50">
+                        <i data-lucide="eye" class="w-4 h-4"></i> Pré-visualizar PDF
+                    </button>
                     <button id="generatePdfButton"
                         class="bg-red-700 hover:bg-red-600 text-white font-medium px-5 py-2 rounded-lg shadow-sm transition-colors flex items-center gap-2">
                         <i data-lucide="file-text" class="w-4 h-4"></i> Gerar PDF Oficial
@@ -647,6 +651,22 @@
             <p class="text-[10px] text-center text-gray-400 mt-8">Documento gerado eletronicamente pelo Sistema de
                 Planejamento de Compras.</p>
         </div>
+    </div>
+</div>
+
+<!-- Modal de Pré-visualização do PDF -->
+<div id="pdfPreviewModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[9998] hidden">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-[90%] border border-slate-200 overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+            <div>
+                <p class="text-[10px] uppercase font-bold text-slate-400">Calendário de Compras 2026</p>
+                <h3 class="text-lg font-bold text-slate-800">Pré-visualização do PDF</h3>
+            </div>
+            <button id="closePdfPreview" class="text-slate-500 hover:text-slate-800 transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <div id="pdfPreviewBody" class="p-6 bg-slate-50 overflow-y-auto max-h-[75vh]"></div>
     </div>
 </div>
 

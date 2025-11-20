@@ -3,6 +3,8 @@ import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
+import { DEFAULT_GROUPS_RAW } from './data/groups.js';
+
 const firebaseConfig = {
     apiKey: "AIzaSyATe3-KBCHGUx5jszvjWD-mt1WbbPNPYZ0",
     authDomain: "calendario-de-compras.firebaseapp.com",
@@ -33,168 +35,7 @@ const UNIT_ACRONYMS = {
 const SECRETARIAS_LIST = Object.keys(UNIT_ACRONYMS).sort();
 const MONTHS = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
-// --- LISTA COMPLETA DE GRUPOS ---
-const DEFAULT_GROUPS_RAW = [
-    ['000400', 'MATERIAL DE INFORMATICA'], ['000401', 'PEÇAS PARA VEÍCULO'], ['000402', 'CONTRATAÇÃO PRESTAÇÃO DE SERVIÇOS LABORATORIAIS'],
-    ['000403', 'CONTR. PREST. SERV. DE MÉDIA E ALTA COMPLEXIDADE AMBULATORIAL'], ['000404', 'MATERIAL ELETRICO ELETRÔNICO'], ['000405', 'SERVIÇO DE CÓPIAS'],
-    ['000406', 'MANUTENÇÃO DE VEICULOS - FROTA MECANIZADA'], ['000407', 'CONFECÇÃO DE IMPRESSOS DE USO CONTÍNUO'], ['000408', 'MATERIAL DE ESCRITORIO'],
-    ['000409', 'ACESSÓRIO PARA VEÍCULO'], ['000410', 'GÁS LIQUEFEITO DE PETRÓLEO - GLP'], ['000411', 'COMBUSTÍVEL AUTOMOTIVO'], ['000412', 'GÊNEROS ALIMENTÍCIOS'],
-    ['000413', 'CONFECÇÃO DE IMPRESSOS DE USO ESPECIAL'], ['000414', 'CONFECÇÃO DE IMPRESSOS TÉCNICOS COM CÓDIGO'], ['000415', 'CONFECÇÃO DE PLACA OU TARJETA PARA VEÍCULO'],
-    ['000416', 'SERVIÇO DE ALINHAMENTO E BALANCEAMENTO'], ['000417', 'CORTINAS EM PERSIANAS E TECIDOS'], ['000418', 'CONFECÇÃO DE FAIXAS E ESCRITA TIPO LETREIRO'],
-    ['000419', 'ALIMENTAÇÃO PARA ATLETAS EM JOGOS FESTIVOS'], ['000420', 'ALUGUEL DE OUTDOOR'], ['000421', 'APARELHO DE MEDIÇÃO E ORIENTAÇÃO'],
-    ['000422', 'APARELHO E EQUIPAMENTO DE COMUNICAÇÃO'], ['000423', 'SERVIÇO DE ENCADERNAÇÃO DE DOCUMENTOS'], ['000424', 'ARDÓSIA'], ['000425', 'AREIA'],
-    ['000426', 'ARTEFATOS CONCRETO PREMOLDADOS'], ['000427', 'ARTEFATOS DE FERRO'], ['000428', 'ARTIGO DE CAMA MESA E BANHO'], ['000429', 'ASSINATURA DE JORNAIS'],
-    ['000430', 'ASSINATURA DE REVISTAS BOLETINS'], ['000431', 'AUXILIO FUNERAL'], ['000432', 'BANDEIRA MASTRO E FLÂMULA'], ['000433', 'BICICLETA'],
-    ['000434', 'BRINQUEDOS'], ['000435', 'BRITA'], ['000436', 'EQUIPAMENTO PARA REPRODUÇÃO DE CÓPIAS'], ['000437', 'CARIMBO E SUPRIMENTOS PARA CARIMBO'],
-    ['000438', 'CARTEIRA FUNCIONAL E CEDULA'], ['000439', 'CIMENTO'], ['000441', 'MANUTENÇÃO DE MOTOS'], ['000442', 'RETÍFICA EM MOTOR'],
-    ['000443', 'CONFECÇÃO DE UNIFORMES'], ['000444', 'CONFECÇÃO E COLOCAÇÃO DE ADESIVO TIPO SILK'], ['000445', 'CONGRESSOS, CURSOS E EVENTOS'],
-    ['000446', 'CONTR. PREST. SERV. DE ARQUITETURA'], ['000447', 'CONTR. PREST. SERV. DE REDE DE INFORMÁTICA'], ['000448', 'EXAMES PARA APOIO DIAGNÓSTICO'],
-    ['000449', 'ELETRODOMÉSTICO'], ['000450', 'CONTRATAÇÃO DE SHOWS MUSICAIS'], ['000451', 'EQUIPAMENTO DE ÁUDIO E VÍDEO'], ['000452', 'EQUIPAMENTO DE INFORMÁTICA'],
-    ['000453', 'EQUIPAMENTO ESPORTIVO'], ['000454', 'EQUIPAMENTO INDUSTRIAL'], ['000455', 'EQUIPAMENTO MÉDICO-HOSPITALAR'], ['000456', 'EQUIPAMENTO ODONTOLÓGICO'],
-    ['000457', 'EQUIPAMENTO PARA FISIOTERAPIA'], ['000458', 'EQUIPAMENTO PARA LABORATÓRIO'], ['000459', 'EQUIPAMENTO PARA OFICINA'],
-    ['000460', 'EQUIPAMENTO PARA PARQUE INFANTIL'], ['000461', 'EQUIPAMENTO DE RADIOFUSÃO'], ['000462', 'EQUIPAMENTO PARA USINA ASFÁLTICA'],
-    ['000463', 'EQUIPAMENTO DE PROTEÇÃO INDIVIDUAL'], ['000464', 'EQUIPAMENTOS E ACESSORIOS PARA LIMPEZA'], ['000465', 'EQUIPAMENTOS ELÉTRICO ELETRÔNICO'],
-    ['000466', 'MADEIRA'], ['000467', 'FERRAGEM'], ['000468', 'FERRAMENTA'], ['000469', 'FILTROS PARA VEÍCULO'], ['000470', 'MATERIAL DE HIGIENE PESSOAL'],
-    ['000471', 'GENEROS NUTRICIONAIS'], ['000472', 'GRADE, JANELA, PORTA E BASCULANTE'], ['000473', 'INSTRUMENTO MEDICO-HOSPITALAR'],
-    ['000474', 'INSTRUMENTO ODONTOLÓGICO'], ['000475', 'LANCHE'], ['000476', 'MATERIAL DE CARPINTARIA'], ['000478', 'LOCAÇÃO DE BARRACAS E TENDAS'],
-    ['000479', 'LOCAÇÃO DE IMÓVEL'], ['000480', 'LOCAÇÃO DE MÁQUINAS E EQUIP. MEDICO-HOSP.'], ['000481', 'LUBRIFICANTE AUTOMOTIVO'],
-    ['000482', 'MEDICAMENTOS (USO GERAL)'], ['000483', 'LOCAÇÃO DE FOTOCOPIADORA/IMPRESSORAS'], ['000484', 'MANUTENÇÃO DE EQUIP. COMUNICAÇÃO'],
-    ['000485', 'MANUTENÇÃO/CONSERTO EM ELETRODOMÉSTICO'], ['000486', 'MANUTENÇÃO EQUIP.ELETRICO-ELETRONICO'], ['000487', 'MANUTENÇÃO EQUIP.ESCRITÓRIO'],
-    ['000488', 'MANUTENÇÃO EQUIP.INFORMÁTICA'], ['000489', 'MANUTENÇÃO EQUIP. LABORATÓRIO'], ['000490', 'MAQUINAS PESADAS'],
-    ['000491', 'PLANTAS ORNAMENTAIS'], ['000492', 'CONFECÇÃO DE PLACAS COMEMORATIVAS'], ['000493', 'MATERIAL DE CONSTRUÇÃO'], ['000494', 'VIDROS E ACESSÓRIOS'],
-    ['000495', 'PAGAMENTOS NOTORIAIS'], ['000496', 'SERVIÇO DE CHAVEIRO'], ['000497', 'SERVIÇO DE RECARGA DE EXTINTOR'],
-    ['000498', 'ACESSORIO/MATERIAL DE AUDIO E VIDEO'], ['000499', 'REVELAÇÃO E CÓPIA DE FILMES'], ['000500', 'MATERIAL DE COPA E COZINHA'],
-    ['000501', 'MATERIAL DE ENFERMAGEM'], ['000502', 'MERENDA ESCOLAR'], ['000503', 'GASES INDUSTRIAIS'], ['000504', 'MATERIAL E PEÇAS P/ ELETRODOMÉSTICOS'],
-    ['000505', 'MATERIAL E PEÇAS P/ REPAROS EM MOTOSSERRA'], ['000506', 'ACESSÓRIO P/ EQUIPAMENTO DE COMUNICAÇÃO'],
-    ['000507', 'MATERIAL DE LIMPEZA AUTOMOTIVA'], ['000508', 'MATERIAL E PEÇAS P/ USINA LAMA ASFÁLTICA'], ['000509', 'TELECOMUNICAÇÃO'],
-    ['000510', 'MATERIAL P/ INSTRUMENTOS MUSICAIS'], ['000511', 'MATERIAL HIDRÁULICO'], ['000512', 'MATERIAL ODONTOLÓGICO'],
-    ['000513', 'SERVIÇO DE CAPOTEIRO'], ['000514', 'PEÇAS P/ EQUIP. ODONTOLÓGICO'], ['000515', 'SEGURO DE VEÍCULO'],
-    ['000516', 'SERVIÇO DE LOCAÇÃO DE VEÍCULOS'], ['000517', 'CONTRAT. PREST. SERV. P/ COLETA DE LIXO'], ['000518', 'SERVIÇOS AUDITORIA/CONSULTORIA'],
-    ['000519', 'ÁGUA MINERAL'], ['000520', 'EQUIPAMENTO HIDRAULICO'], ['000521', 'AUXILIO ALIMENTAÇÃO'],
-    ['000522', 'MATERIAL DE EMBALAGEM'], ['000523', 'MATERIAL P/ FESTIVIDADE'],
-    ['000524', 'EQUIPAMENTO DE FISIOTERAPIA'], ['000525', 'MATERIAL PARA FOTOGRAFIA'], ['000526', 'MATERIAL P/ LANTERNAGEM E PINTURA'],
-    ['000527', 'MATERIAL P/ MANUTENÇÃO DE BENS IMÓVEIS'], ['000528', 'MATERIAL P/ OFICINAS TERAPÊUTICAS'], ['000529', 'MATERIAL P/ CONTROLE DE VETOR'],
-    ['000530', 'MATERIAL P/ SANEAMENTO BÁSICO'], ['000531', 'MATERIAL QUÍMICO'], ['000532', 'MATERIAL DE LABORATORIO'], ['000533', 'MEDALHAS E TROFÉUS'],
-    ['000534', 'MATERIAL DE PINTURA'], ['000535', 'MEDICAMENTOS (VETERINÁRIO)'], ['000536', 'MOBÍLIA'], ['000537', 'MOBILIÁRIO ESCOLAR'],
-    ['000538', 'MOBILIÁRIO PARA ESCRITÓRIO'], ['000539', 'MATERIAL DE LIMPEZA GERAL'], ['000540', 'SERVIÇO DE ENGENHARIA'],
-    ['000541', 'EQUIPAMENTOS DE MANUTENÇÃO DO TRÂNSITO'], ['000542', 'PNEUS, CÂMARAS E PROTETORES'], ['000543', 'MOBILIÁRIO PARA LABORATÓRIO'],
-    ['000544', 'OBRAS DE CONSTRUÇÃO CIVIL'], ['000545', 'PASSAGENS E PASSES'], ['000546', 'PEÇAS P/ EQUIP. MED.HOSPITALAR'],
-    ['000547', 'PROPAGANDA VOLANTE'], ['000548', 'SERVIÇO DE SONORIZAÇÃO'], ['000549', 'PEÇAS E SUPRIMENTOS DE INFORMÁTICA'],
-    ['000550', 'SERVIÇO DE TRANSPORTE ESCOLAR'], ['000551', 'SUPRIMENTOS MÉDICOS HOSPITALAR'], ['000553', 'HERBICIDAS'],
-    ['000554', 'SERVIÇO DE SERRALHEIRO'], ['000555', 'MATERIAL DE SINALIZAÇÃO VISUAL'], ['000556', 'ACUMULADORES ELETROELETRÔNICOS'],
-    ['000557', 'SERVIÇO AUTO-ELÉTRICO'], ['000558', 'PEÇAS P/ MOTOS E BICICLETAS'], ['000559', 'MATERIAL DE DESENHO TÉCNICO'],
-    ['000560', 'EQUIPAMENTO AGRÍCOLA'], ['000561', 'SERVIÇO DE LETREIRO'], ['000562', 'MATERIAL DE SEGURANÇA'], ['000563', 'GASES MEDICINAIS'],
-    ['000564', 'RENOVAÇÃO DE ASSINATURA'], ['000565', 'MANUTENÇÃO EQUIP. P/ FISIOTERAPIA'], ['000566', 'ACESSÓRIOS P/ EQUIPAMENTOS ELETRÔNICOS'],
-    ['000567', 'ESPETÁCULO PIROTÉCNICO'], ['000568', 'BUFFET'], ['000569', 'SERV. MÉDIC. ESPECIALIZADO'],
-    ['000570', 'IMPLANTAÇÃO DE SEMÁFORO'], ['000571', 'VEÍCULOS LEVES/UTILITÁRIOS'],
-    ['000572', 'SERVIÇO DE SILKAGEM'], ['000573', 'TIJOLO'], ['000574', 'PEÇAS PARA MÁQUINAS PESADAS'], ['000575', 'ACESSÓRIOS PARA MÁQUINAS PESADAS'],
-    ['000576', 'MATERIAIS PARA JARDIM'], ['000577', 'PEÇAS P/ EQUIP. LABORATÓRIO'], ['000578', 'LOCAÇÃO DE VEÍCULOS'],
-    ['000579', 'TELHA'], ['000580', 'PEÇAS PARA ROÇADEIRA'], ['000581', 'SERVIÇO TÉCNICO ESPECIALIZADO'],
-    ['000582', 'LIVRO DIDÁTICO'], ['000583', 'MATERIAL DIDÁTICO'], ['000584', 'MATERIAL DE DIVULGAÇÃO'],
-    ['000585', 'COLETA DE LIXO HOSPITALAR'], ['000586', 'REMOÇÃO DE PACIENTES'], ['000587', 'SERVIÇO DE MOLEIRO'],
-    ['000588', 'PEÇAS PARA TELEFONIA'], ['000589', 'MATERIAL DE PAVIMENTAÇÃO'], ['000590', 'SERVIÇO DE ELETRICISTA'],
-    ['000591', 'RETÍFICA EM MOTOR'], ['000592', 'PAGAMENTO DE FRANQUIA'], ['000593', 'PRONTO ATENDIMENTO'],
-    ['000594', 'ACUMULADORES'], ['000595', 'ACESSÓRIOS PARA SEMÁFORO'], ['000596', 'SERVIÇO DE FERREIRO'],
-    ['000597', 'MANUTENÇÃO DE CORTINAS'], ['000598', 'SERVIÇO DE BOMBEIRO HIDRÁULICO'], ['000599', 'SERVIÇOS DE MARCENARIA'],
-    ['000600', 'RECARGA DE REFRIGERAÇÃO'], ['000601', 'EQUIPAMENTOS DE SEGURANÇA'],
-    ['000602', 'PLACAS INDICATIVAS'], ['000603', 'SERVIÇOS DE EVENTOS'],
-    ['000604', 'CERTIFICADOS E LAUDOS'], ['000605', 'SEGURANÇA E VIGILÂNCIA'],
-    ['000606', 'ARTIGOS DE CAMA/MESA HOSPITALAR'], ['000607', 'CONFECÇÃO DE VESTUÁRIO HOSPITALAR'],
-    ['000608', 'SERVIÇO DE INTERNET'], ['000609', 'ARTIGOS PARA BERCÁRIO'], ['000610', 'FERRAMENTA ELÉTRICA'], ['000611', 'PUBLICAÇÃO'],
-    ['000612', 'ACESSÓRIOS DE INFORMÁTICA'], ['000613', 'QUADRO E MOLDURA'], ['000614', 'SERVIÇOS GFIP'],
-    ['000615', 'SERVIÇO ELETRICO-ELETRONICO'], ['000616', 'EQUIPAMENTOS URBANOS'], ['000617', 'SEGURANÇA P/ ACOMPANHAMENTO'],
-    ['000618', 'LOCAÇÃO DIVERSA'], ['000619', 'SERVIÇO DE BORRACHEIRO'], ['000620', 'SERVIÇO DE REBOQUE'],
-    ['000621', 'LAVAÇÃO DE VEÍCULOS'], ['000622', 'MANUTENÇÃO E RECAUCHUTAGEM'], ['000623', 'UTENSÍLIOS PARA LIMPEZA'],
-    ['000624', 'EQUIPAMENTO DE ABASTECIMENTO'], ['000625', 'EQUIPAMENTO PARA ESCRITORIO'], ['000626', 'LAVANDERIA'],
-    ['000627', 'MATERIAL DE OFICINA'], ['000628', 'SOFTWARE'], ['000629', 'MATERIAL ORTOPÉDICO'], ['000630', 'SERVIÇOS DE DESPACHANTE'],
-    ['000631', 'BAR E RESTAURANTE'], ['000632', 'INSUMOS INSPEÇÃO ANIMAL/VEGETAL'],
-    ['000633', 'LOCAÇÃO ESTRUTURAS EVENTOS'], ['000634', 'PEÇAS DE REPOSIÇÃO'],
-    ['000635', 'MANUTENÇÃO SINALIZAÇÃO VIÁRIA'], ['000636', 'WEB SITES'], ['000637', 'LANTERNAGEM E PINTURA'],
-    ['000638', 'PEÇAS EQUIPAMENTO AGRÍCOLA'], ['000639', 'SERVIÇO DE SEGURANÇA'],
-    ['000640', 'AFERIÇÃO E CALIBRAÇÃO'], ['000641', 'TOPOGRAFIA'],
-    ['000642', 'POÇO ARTESIANO'], ['000643', 'REFEIÇOES PRONTAS'],
-    ['000644', 'VESTUÁRIOS P/ CAMPANHA'], ['000645', 'VEÍCULOS RODOVIÁRIOS'], ['000646', 'MANUTENÇÃO EQUIP. HOSPITALAR'],
-    ['000647', 'SINALIZADORES AEROPORTO'], ['000648', 'BARRACAS E TENDAS'], ['000649', 'INTERNAÇÃO INVOLUNTÁRIA'],
-    ['000650', 'PEÇAS COMPACTADOR LIXO'], ['000651', 'MANUTENÇÃO COMPACTADOR'], ['000653', 'VEICULOS PESADOS'], ['000654', 'SEGURO DE VIDA'],
-    ['000656', 'VIDRAÇARIA'], ['000657', 'SELEÇÃO E TREINAMENTO'], ['000658', 'SERVIÇOS POSTAIS'],
-    ['000659', 'REDES WIRELESS'], ['000660', 'MATERIAL AGRÍCOLA'], ['000661', 'PUBLICIDADE E PROPAGANDA'],
-    ['000662', 'APOIO A SHOWS MUSICAIS'], ['000663', 'ADITIVO AUTOMOTIVO'],
-    ['000664', 'FORMAS PRÉ-MOLDADOS'], ['000665', 'FOTOGRAFIAS AEREAS'], ['000666', 'EQUIPAMENTOS PARQUES E JARDINS'],
-    ['000667', 'REFORMA CARROCERIA'], ['000668', 'MATERIAL CARROCERIA'], ['000669', 'MOBILIÁRIO URBANO'], ['000670', 'MATERIAL DE PROTEÇÃO'],
-    ['000671', 'CONSERTO EQUIP. ODONTOLÓGICO'], ['000672', 'SEGURANÇA PATRIMONIAL'], ['000673', 'PASSAGEM AÉREA'],
-    ['000674', 'MATERIAIS SINALIZAÇÃO VIÁRIA'], ['000675', 'PERMISSAO DE USO'], ['000676', 'EQUIPAMENTO TOPOGRAFIA'],
-    ['000677', 'LOCAÇÃO MÁQUINAS'], ['000678', 'SERVIÇOS SINALIZAÇÃO VIÁRIA'], ['000679', 'SERVIÇO DE TRANSPORTE'],
-    ['000680', 'MANUTENÇÃO EQUIP. ODONTOLÓGICO'], ['000681', 'ACESSÓRIOS BORRACHARIA'],
-    ['000682', 'MONITORAMENTO CÂMERAS'], ['000683', 'PLACAS COMEMORATIVAS'], ['000684', 'INSTALAÇÃO CÂMERAS'],
-    ['000685', 'EQUIPAMENTOS VETERINÁRIOS'], ['000686', 'MATERIAL VETERINÁRIO'], ['000687', 'LIVROS GERAIS'],
-    ['000688', 'DIVULGAÇÃO EVENTOS'], ['000689', 'FILMAGEM E EDIÇÃO'], ['000690', 'SINALIZAÇÃO HORIZONTAL'],
-    ['000691', 'TORNEARIA'], ['000692', 'MANUTENÇÃO EQUIP. HOSPITALAR'], ['000693', 'SEGURANÇA DESARMADA'],
-    ['000694', 'ARTIGOS DE ESCRITORIO'], ['000695', 'MAQUINAS DE OFICINAS'],
-    ['000696', 'POSTES PARA CERCA'], ['000697', 'LOCAÇÃO REDE OPTICA'], ['000698', 'AUXILIO ALIMENTAÇÃO'],
-    ['000699', 'VEDANTES E ADESIVOS'], ['000700', 'MÁQUINAS MOTOMECANIZADAS'], ['000701', 'ATENDIMENTO HOSPITALAR'],
-    ['000702', 'LEILOEIRO'], ['000703', 'CONCRETO USINADO'], ['000704', 'PLANO MOBILIDADE URBANA'],
-    ['000705', 'MATERIAL ABATEDOURO'], ['000706', 'GERENCIAMENTO TRANSPORTE SAÚDE'],
-    ['000707', 'TRANSPORTE DE PESSOAS'], ['000708', 'MANUTENÇÃO DE BENS IMÓVEIS'], ['000709', 'MOBILIÁRIOS EM GERAL'],
-    ['000710', 'PLANEJAMENTO E METAS'], ['000711', 'PACOTE DE VIAGEM'],
-    ['000712', 'PEÇAS PARQUES E JARDINS'], ['000713', 'TRANSPORTE DE VALORES'],
-    ['000714', 'INSTITUIÇÃO FINANCEIRA'], ['000715', 'MANUTENÇÃO PARQUES E JARDINS'], ['000716', 'PLACAS VEICULARES'],
-    ['000717', 'PLACAS COMEMORATIVAS'], ['000718', 'PRODUTO LÚDICO'], ['000719', 'TRADUÇÃO DE TEXTOS'],
-    ['000720', 'EQUIPAMENTO PINTURA VIÁRIA'], ['000721', 'VEÍCULOS ESPECIAIS'], ['000722', 'EDIÇÃO DE VÍDEO'],
-    ['000723', 'EQUIPAMENTOS MATADOURO'], ['000724', 'LOCAÇÃO EQUIPAMENTO'],
-    ['000725', 'ASSINATURA DIGITAL'], ['000726', 'MATERIAL ESPORTIVO'], ['000727', 'VIGILÂNCIA PATRIMONIAL'], ['000728', 'SIMBOLO OLÍMPICO'],
-    ['000729', 'PAVIMENTAÇÃO E CONSTRUÇÃO'], ['000730', 'MATERIAL MEDICO-HOSPITALAR'],
-    ['000731', 'HOSPEDAGEM ASSISTIDA'], ['000732', 'POÇO ARTESIANO'],
-    ['000733', 'MATERIAIS DIDÁTICO PEDAGOGICO'], ['000734', 'LOCAÇÃO EQUIP. HOSPITALAR'],
-    ['000735', 'PUBLICAÇÕES JUDICIAIS'], ['000736', 'LIMPEZA AUTOMOTIVA'], ['000737', 'EQUIPAMENTO COMUNICAÇÃO'],
-    ['000738', 'EQUIPAMENTO ABATEDOURO'], ['000739', 'HOSPEDAGEM'], ['000740', 'INFRAESTRUTURA REDE OPTICA'],
-    ['000741', 'BANHEIROS QUIMICOS'], ['000742', 'COBERTURA PARA CURATIVOS'], ['000743', 'EQUIPAMENTO PARA VEICULO'],
-    ['000744', 'EQUIPAMENTOS PARA VEÍCULOS'], ['000745', 'BRIGADISTA/SOCORRISTA'],
-    ['000746', 'INSTALAÇÃO CORTINAS'], ['000747', 'DIAGNÓSTICO ESPELEOLÓGICO'],
-    ['000748', 'PEÇAS EQUIPAMENTOS ELÉTRICOS'], ['000749', 'PUBLICIDADE CARRO DE SOM'],
-    ['000750', 'ACESSÓRIO COMUNICAÇÃO'], ['000751', 'INSTRUMENTOS MUSICAIS'],
-    ['000752', 'IMPRESSÃO E CÓPIAS'], ['000753', 'MANUTENÇÃO BENS MOVEIS'],
-    ['000754', 'PILOTAGEM DRONE'], ['000755', 'SEGURANÇA DESARMADA'],
-    ['000756', 'ARMAZENAMENTO BETUMINOSO'], ['000757', 'BIBLIOTECA DIGITAL'], ['000758', 'MAQUINAS INDUSTRIAIS'],
-    ['000759', 'JARDINAGEM'], ['000760', 'PEÇAS FONTE LUMINOSA'],
-    ['000761', 'MANUTENÇÃO INCÊNDIO'], ['000762', 'EDUCAÇÃO NUTRICIONAL'],
-    ['000763', 'CUIDADORES'], ['000764', 'SERVIÇOS GRÁFICOS'],
-    ['000765', 'ACESSÓRIOS OFICINA'], ['000766', 'EQUIPAMENTOS MONITORAMENTO'], ['000767', 'INVENTÁRIO PATRIMONIAL'],
-    ['000768', 'EQUIPAMENTOS MECÂNNICOS'], ['000769', 'SERVIÇO DE TRANSPORTE'],
-    ['000770', 'GRAVAÇÃO ÁUDIO E VÍDEO'], ['000771', 'CONCESSÃO BENS PÚBLICOS'],
-    ['000772', 'ADAPTAÇÃO VEICULAR'], ['000773', 'COBRANÇA PEDÁGIO'], ['000774', 'MODELOS ANATÔMICOS'],
-    ['000775', 'MANUTENÇÃO ELEVADORES'], ['000776', 'DESTINAÇÃO DE RESÍDUOS'],
-    ['000777', 'MANUTENÇÃO POÇOS'], ['000778', 'ACONDICIONAMENTO E PROTEÇÃO'], ['000779', 'CONSERTO BICICLETA'],
-    ['000780', 'LEVANTAMENTO PATRIMONIAL'], ['000781', 'LIMPEZA HOSPITALAR'], ['000782', 'ENFEITES NATALINOS'],
-    ['000783', 'TRANSPORTE COLETIVO URBANO'], ['000784', 'TRANSPORTE COLETIVO DISTRITAL'], ['000785', 'FANTASIAS EDUCATIVAS'], ['000786', 'CESTA BÁSICA'],
-    ['000787', 'SERVIÇOS TI'], ['000788', 'CORTE E COSTURA'],
-    ['000789', 'RECARGA EXTINTORES'], ['000790', 'SERVIÇO ENGENHARIA'], ['000791', 'PEÇAS MICROPAVIMENTO'],
-    ['000792', 'PROPAGANDA VOLANTE'], ['000793', 'SERVIÇOS GERAIS'], ['000794', 'PRODUÇÕES VÍDEO'],
-    ['000795', 'ABASTECIMENTO D\'ÁGUA'], ['000796', 'TERAPIA OCUPACIONAL'],
-    ['000797', 'MANUTENÇÃO INDUSTRIAL'], ['000798', 'EPI/EPC'],
-    ['000799', 'FOLHA DE PAGAMENTO'], ['000800', 'ETIQUETAS IDENTIFICAÇÃO'],
-    ['000801', 'TELEORIENTAÇÃO'], ['000802', 'GERENCIAMENTO FROTAS'], ['000803', 'INSTALAÇÃO AR CONDICIONADO'],
-    ['000806', 'SERVIÇO DE TURISMO'], ['000807', 'PRODUÇÃO AUDIOVISUAL'], ['000808', 'MANUTENÇÃO SEGURANÇA'],
-    ['000811', 'SISTEMA DE IRRIGAÇÃO'], ['000812', 'TRANSPORTE RECREATIVO'],
-    ['000813', 'SERVIÇOS ON-LINE'], ['000814', 'CERIMONIAL'], ['000815', 'MANUTENÇÃO HOSPITALAR'],
-    ['000816', 'PESAGEM RESÍDUOS'], ['000819', 'LOCAÇÃO EQUIP. EVENTOS'], ['000820', 'EQUIPAMENTOS DIVERSOS'],
-    ['000821', 'CENOGRAFIA'], ['000822', 'GERENCIAMENTO FROTA'], ['000823', 'COMBATE INCÊNDIO FLORESTAL'],
-    ['000824', 'SERVIÇOS DE BRIGADISTA'], ['000828', 'VÍDEO MONITORAMENTO'], ['000829', 'EDUCAÇÃO EM SAÚDE'],
-    ['000830', 'TRIO ELÉTRICO'], ['000833', 'USINA RESÍDUOS'], ['000834', 'CAÇAMBA ESTACIONÁRIA'],
-    ['000835', 'REVISÃO VEÍCULOS'], ['000836', 'MANUTENÇÃO ÁUDIO/VÍDEO'],
-    ['000837', 'TRANSPORTE MATERIAIS'], ['000838', 'ESTRUTURAS MODULARES'],
-    ['000839', 'SINALIZAÇÃO HORIZONTAL'], ['000840', 'SINALIZAÇÃO'], ['000841', 'MATERIAL RECREATIVO'],
-    ['000842', 'TACÓGRAFOS'], ['000843', 'KIT NATALIDADE'],
-    ['000844', 'EQUIPAGEM BIBLIOTECA'], ['000845', 'DRONES'],
-    ['000852', 'CÂMARAS DE VACINA'], ['000854', 'SERVIÇO DE PLANTIO'], ['000855', 'REAGENTES QUÍMICOS'],
-    ['000858', 'SISTEMA TELEFONIA'], ['000859', 'SISTEMA SEGURANÇA'],
-    ['000861', 'EVENTOS ESPORTIVOS'], ['000864', 'INOVAÇÃO TECNOLÓGICA'],
-    ['000865', 'ESTIMULAÇÃO MULTIDISCIPLINAR'], ['000866', 'PSICOMOTORES'],
-    ['000867', 'BRINQUEDOS PSICOPEDAGÓGICOS'], ['000868', 'AVALIAÇÃO MULTIDIMENSIONAL'],
-    ['000871', 'SERVIÇO EDUCACIONAL BILÍNGUE'], ['000872', 'INGRESSOS'], ['000874', 'ENGENHARIA ELÉTRICA'],
-    ['000876', 'EVENTOS E COMEMORAÇÕES']
-];
-
-const DEFAULT_GROUPS_LIST = DEFAULT_GROUPS_RAW.map(g => [g[0].slice(-3), g[1]]);
+// --- LISTA COMPLETA DE GRUPOS: ver data/groups.js ---
 
 let firebaseUserUid = null;
 let appUser = null;
@@ -1045,7 +886,12 @@ function setupUI() {
     });
 
     // PDF
+    safeAddEventListener('previewPdfButton', 'click', openPdfPreview);
     safeAddEventListener('generatePdfButton', 'click', generatePDFReport);
+    safeAddEventListener('closePdfPreview', 'click', closePdfPreview);
+    safeAddEventListener('pdfPreviewModal', 'click', (e) => {
+        if (e.target.id === 'pdfPreviewModal') closePdfPreview();
+    });
 
     // Export
     safeAddEventListener('exportReportButton', 'click', exportCSV);
@@ -1289,58 +1135,103 @@ function exportCSV() {
     document.body.removeChild(link);
 }
 
-function generatePDFReport() {
-    const date = new Date().toLocaleDateString('pt-BR');
-    document.getElementById('pdfDate').textContent = date;
+function buildPdfTemplate() {
+    const templateBase = document.getElementById('pdfTemplate');
+    const calendarArea = document.getElementById('calendar-print-area');
 
-    const sourceContent = document.getElementById('calendar-print-area').cloneNode(true);
-    const targetArea = document.getElementById('pdfContentArea');
-    targetArea.innerHTML = '';
+    if (!templateBase || !calendarArea) return null;
 
-    const guideOriginal = document.getElementById('calendarGuide');
-    if (guideOriginal) {
-        const guideClone = guideOriginal.cloneNode(true);
-        guideClone.classList.remove('no-print');
-        guideClone.style.marginBottom = '20px';
-        const hint = guideClone.querySelector('#masterDragHint');
-        if (hint) hint.remove();
-        targetArea.appendChild(guideClone);
-    }
-
-    targetArea.appendChild(sourceContent);
-
-    // --- Inject Custom Logo into PDF Template ---
-    const appLogoImg = document.getElementById('appLogoImg');
-    const pdfLogoContainer = document.getElementById('pdfLogoContainer');
-
-    if (appLogoImg && !appLogoImg.classList.contains('hidden') && appLogoImg.src) {
-        pdfLogoContainer.innerHTML = '';
-        const newImg = document.createElement('img');
-        newImg.src = appLogoImg.src;
-        newImg.className = "w-full h-full object-contain";
-        pdfLogoContainer.appendChild(newImg);
-    } else {
-        pdfLogoContainer.innerHTML = `
-            <svg class="w-full h-full absolute inset-0 p-1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M50 5 L90 25 V55 C90 80 50 95 50 95 C50 95 10 80 10 55 V25 L50 5 Z" fill="#e2e8f0" stroke="#1e3a8a" stroke-width="2"/>
-                    <path d="M50 15 L50 85 M20 40 L80 40" stroke="#1e3a8a" stroke-width="2" opacity="0.2"/>
-                    <text x="50" y="65" font-family="serif" font-weight="bold" font-size="40" text-anchor="middle" fill="#1e3a8a">C</text>
-                </svg>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b2/Bras%C3%A3o_de_Curvelo.jpg"
-                alt="Brasão Curvelo"
-                class="w-full h-full object-contain relative z-10"
-                crossorigin="anonymous"
-                onerror="this.style.display='none'">`;
-    }
-
-    // HTML2PDF Generation
-    const element = document.getElementById('pdfTemplate');
-
-    // Clone to render off-screen
-    const clone = element.cloneNode(true);
+    const clone = templateBase.cloneNode(true);
     clone.id = 'pdf-render-temp';
     clone.classList.remove('hidden');
-    clone.style.width = '700px'; // Ensure fixed width for PDF consistency
+    clone.style.width = '700px';
+
+    const dateEl = clone.querySelector('#pdfDate');
+    if (dateEl) dateEl.textContent = new Date().toLocaleDateString('pt-BR');
+
+    const targetArea = clone.querySelector('#pdfContentArea');
+    if (targetArea) {
+        targetArea.innerHTML = '';
+
+        const guideOriginal = document.getElementById('calendarGuide');
+        if (guideOriginal) {
+            const guideClone = guideOriginal.cloneNode(true);
+            guideClone.classList.remove('no-print');
+            guideClone.style.marginBottom = '20px';
+            const hint = guideClone.querySelector('#masterDragHint');
+            if (hint) hint.remove();
+            targetArea.appendChild(guideClone);
+        }
+
+        const sourceContent = calendarArea.cloneNode(true);
+        targetArea.appendChild(sourceContent);
+    }
+
+    const appLogoImg = document.getElementById('appLogoImg');
+    const pdfLogoContainer = clone.querySelector('#pdfLogoContainer');
+
+    if (pdfLogoContainer) {
+        if (appLogoImg && !appLogoImg.classList.contains('hidden') && appLogoImg.src) {
+            pdfLogoContainer.innerHTML = '';
+            const newImg = document.createElement('img');
+            newImg.src = appLogoImg.src;
+            newImg.className = "w-full h-full object-contain";
+            pdfLogoContainer.appendChild(newImg);
+        } else {
+            pdfLogoContainer.innerHTML = `
+                <svg class="w-full h-full absolute inset-0 p-1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 5 L90 25 V55 C90 80 50 95 50 95 C50 95 10 80 10 55 V25 L50 5 Z" fill="#e2e8f0" stroke="#1e3a8a" stroke-width="2"/>
+                        <path d="M50 15 L50 85 M20 40 L80 40" stroke="#1e3a8a" stroke-width="2" opacity="0.2"/>
+                        <text x="50" y="65" font-family="serif" font-weight="bold" font-size="40" text-anchor="middle" fill="#1e3a8a">C</text>
+                    </svg>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b2/Bras%C3%A3o_de_Curvelo.jpg"
+                    alt="Brasão Curvelo"
+                    class="w-full h-full object-contain relative z-10"
+                    crossorigin="anonymous"
+                    onerror="this.style.display='none'">`;
+        }
+    }
+
+    return clone;
+}
+
+function openPdfPreview() {
+    const modal = document.getElementById('pdfPreviewModal');
+    const body = document.getElementById('pdfPreviewBody');
+    if (!modal || !body) return;
+
+    const preview = buildPdfTemplate();
+    if (!preview) {
+        alert('Não foi possível gerar a pré-visualização.');
+        return;
+    }
+
+    preview.style.position = 'relative';
+    preview.style.left = '0';
+    preview.style.top = '0';
+    preview.classList.add('overflow-y-auto', 'max-h-[70vh]');
+
+    body.innerHTML = '';
+    body.appendChild(preview);
+    modal.classList.remove('hidden');
+}
+
+function closePdfPreview() {
+    const modal = document.getElementById('pdfPreviewModal');
+    const body = document.getElementById('pdfPreviewBody');
+    if (modal && body) {
+        body.innerHTML = '';
+        modal.classList.add('hidden');
+    }
+}
+
+function generatePDFReport() {
+    const clone = buildPdfTemplate();
+    if (!clone) {
+        alert('Não foi possível gerar o PDF.');
+        return;
+    }
+
     clone.style.position = 'absolute';
     clone.style.left = '-9999px';
     clone.style.top = '0';
@@ -1354,7 +1245,6 @@ function generatePDFReport() {
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // Use window.html2pdf if imported via script tag
     const worker = window.html2pdf ? window.html2pdf() : html2pdf();
 
     worker.set(opt).from(clone).save().then(() => {
