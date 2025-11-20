@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendário de Compras 2026 - Prefeitura de Curvelo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- HTML2PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="bg-slate-50 font-sans text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Cabeçalho Fixo -->
+    <header class="w-full bg-gradient-to-r from-[#004a91] to-[#003366] text-white shadow-xl p-0 no-print z-30 relative">
+        <div class="max-w-7xl mx-auto px-4 h-20 flex justify-between items-center">
+
+            <div class="flex items-center gap-4">
+                <div id="appLogoContainer" class="logo-container bg-white shrink-0 group relative">
+                    <img id="appLogoImg" src="" alt="Logo" class="w-full h-full object-contain hidden">
+                    <div id="appLogoPlaceholder" class="w-full h-full flex items-center justify-center text-blue-200">
+                        <i data-lucide="image" class="w-6 h-6"></i>
+                    </div>
+                    <div id="appLogoOverlay" class="logo-overlay hidden">
+                        <i data-lucide="camera" class="w-6 h-6 text-white drop-shadow-md"></i>
+                    </div>
+                    <input type="file" id="appLogoInput" accept="image/*" class="hidden">
+                </div>
+
+                <div class="flex flex-col justify-center">
+                    <h1 class="text-lg sm:text-xl font-bold leading-tight tracking-tight text-white">Calendário de
+                        Compras 2026</h1>
+                    <div class="flex items-center gap-2">
+                        <div class="h-1 w-1 bg-yellow-400 rounded-full"></div>
+                        <p
+                            class="text-[10px] sm:text-xs text-blue-100 font-medium uppercase tracking-widest opacity-90">
+                            Prefeitura de Curvelo</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 relative">
+                <div id="userInfoContainer"
+                    class="text-right hidden sm:flex flex-col items-end justify-center opacity-0 transition-opacity duration-500">
+                    <div id="currentUserDisplay" class="text-sm font-bold text-white leading-tight">Carregando...</div>
+                    <div id="currentUserCargo" class="text-[11px] text-blue-200 font-medium">...</div>
+                </div>
+
+                <div id="unitSelectorContainer" class="hidden">
+                    <select id="headerUnitSelect"
+                        class="bg-blue-800/50 text-white text-xs border border-blue-400/50 rounded-lg px-3 py-1.5 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 backdrop-blur-sm cursor-pointer hover:bg-blue-800 transition-colors shadow-sm">
+                        <!-- Opções via JS -->
+                    </select>
+                </div>
+
+                <div class="relative">
+                    <button id="userProfileBtn"
+                        class="flex items-center gap-2 focus:outline-none group p-1 rounded-full hover:bg-white/10 transition-colors">
+                        <div id="userAvatar" class="unit-avatar select-none"></div>
+                        <i data-lucide="chevron-down"
+                            class="w-4 h-4 text-blue-200 group-hover:text-white transition-colors"></i>
+                    </button>
+
+                    <div id="userDropdownMenu"
+                        class="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-2xl border border-slate-100 hidden transform origin-top-right z-50">
+                        <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Conta Atual
+                            </p>
+                            <div class="text-sm text-slate-800 font-bold truncate" id="dropdownUnitName">...</div>
+                            <div class="text-xs text-slate-500 truncate mt-0.5" id="dropdownUserName">...</div>
+                        </div>
+
+                        <div class="py-1">
+                            <button id="btnChangePassword"
+                                class="w-full text-left px-5 py-3 text-sm text-slate-600 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-3 transition-colors">
+                                <div class="p-1.5 bg-blue-100 text-blue-600 rounded-md"><i data-lucide="key"
+                                        class="w-4 h-4"></i></div>
+                                <span>Alterar Senha</span>
+                            </button>
+                            <div class="border-t border-slate-100 mx-4"></div>
+                            <button id="btnLogout"
+                                class="w-full text-left px-5 py-3 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center gap-3 transition-colors rounded-b-xl">
+                                <div class="p-1.5 bg-red-100 text-red-600 rounded-md"><i data-lucide="log-out"
+                                        class="w-4 h-4"></i></div>
+                                <span>Sair do Sistema</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </header>
+<!-- Navegação -->
+<nav class="w-full bg-white shadow-sm border-b border-gray-200 no-print sticky top-0 z-20" id="mainNav">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="flex items-center gap-2 sm:gap-8 overflow-x-auto no-scrollbar">
+            <button id="btn-tab-solicitacoes"
+                class="tab-button active text-slate-600 hover:text-blue-700 py-4 px-2 whitespace-nowrap font-medium text-sm"
+                data-tab="tab-solicitacoes">
+                <i data-lucide="edit" class="w-4 h-4 inline-block mr-1.5 mb-0.5"></i>Minhas Solicitações
+            </button>
+            <button id="btn-tab-calendario"
+                class="tab-button text-slate-600 hover:text-blue-700 py-4 px-2 whitespace-nowrap font-medium text-sm"
+                data-tab="tab-calendario">
+                <i data-lucide="calendar" class="w-4 h-4 inline-block mr-1.5 mb-0.5"></i>Calendário Global
+            </button>
+            <button id="btn-tab-grupos"
+                class="tab-button text-slate-600 hover:text-blue-700 py-4 px-2 hidden whitespace-nowrap font-medium text-sm"
+                data-tab="tab-grupos">
+                <i data-lucide="list-checks" class="w-4 h-4 inline-block mr-1.5 mb-0.5"></i>Grupos (Admin)
+            </button>
+            <button id="btn-tab-analise"
+                class="tab-button text-slate-600 hover:text-blue-700 py-4 px-2 hidden whitespace-nowrap font-medium text-sm"
+                data-tab="tab-analise">
+                <i data-lucide="pie-chart" class="w-4 h-4 inline-block mr-1.5 mb-0.5"></i>Análise (Admin)
+            </button>
+            <button id="btn-tab-usuarios"
+                class="tab-button text-slate-600 hover:text-blue-700 py-4 px-2 hidden whitespace-nowrap font-medium text-sm"
+                data-tab="tab-usuarios">
+                <i data-lucide="users" class="w-4 h-4 inline-block mr-1.5 mb-0.5"></i>Usuários (Master)
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- Barra de Progresso -->
+<div id="progressBarContainer" class="bg-slate-100 border-b border-slate-200 py-3 px-4 no-print z-10 relative">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+            <div class="w-12 h-12 rounded-full bg-white border-2 border-blue-500 flex items-center justify-center text-blue-700 font-bold text-sm shadow-sm"
+                id="progressPercent">0%</div>
+            <div class="flex-1 sm:flex-none">
+                <p class="text-sm font-bold text-slate-700">Progresso de Preenchimento</p>
+                <p class="text-xs text-slate-500" id="progressText">Você avaliou 0 de 0 grupos.</p>
+            </div>
+        </div>
+        <div class="w-full sm:w-64 h-3 bg-gray-300 rounded-full overflow-hidden relative shadow-inner">
+            <div id="progressBarFill"
+                class="h-full bg-gradient-to-r from-blue-500 to-indigo-600 w-0 transition-all duration-500 relative overflow-hidden rounded-full">
+                <div class="absolute inset-0 progress-shine"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Conteúdo Principal -->
+<main class="max-w-7xl mx-auto p-4 w-full flex-grow">
+
+    <!-- Aba: Minhas Solicitações -->
+    <div id="tab-solicitacoes" class="tab-content space-y-6">
+        <div id="deadlineBanner"
+            class="hidden bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-center gap-3 mb-4">
+            <i data-lucide="lock" class="w-5 h-5"></i>
+            <div>
+                <p class="font-bold text-sm" id="deadlineTitle">Período de Edição Encerrado</p>
+                <p class="text-xs" id="deadlineText">O prazo final expirou. O sistema está em modo de leitura para
+                    usuários não-administradores.</p>
+            </div>
+        </div>
+
+        <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">Minhas Solicitações (2026)</h2>
+                    <p class="text-sm text-slate-500" id="solicitacoesSubtitle">Indique a prioridade e a sazonalidade.
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <span
+                        class="px-2 py-1 bg-gray-100 text-gray-400 border border-gray-200 text-xs rounded">Pendente</span>
+                    <span class="px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded">0 = Sem Interesse</span>
+                    <span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded">10 = Urgente</span>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-6">
+                <div class="flex items-start gap-3">
+                    <div class="text-blue-600 mt-1"><i data-lucide="info" class="w-6 h-6"></i></div>
+                    <div>
+                        <h3 class="font-bold text-blue-900 text-sm mb-2">Instruções de Preenchimento</h3>
+                        <ul class="space-y-1 text-xs text-blue-800 list-disc list-inside">
+                            <li><strong>Prioridade:</strong> Classifique de 1 a 10 a importância da contratação para sua
+                                unidade. Selecione "0 - Sem Interesse" se não se aplica.</li>
+                            <li><strong>Sazonalidade:</strong> Indique o mês recomendado para início do processo. Se não
+                                houver preferência, deixe "Sem Preferência".</li>
+                            <li><strong>Salvamento:</strong> As alterações são salvas automaticamente ao clicar no botão
+                                "Salvar Alterações".</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4 mb-4 bg-slate-50 p-4 rounded-lg border border-slate-200 filters-toolbar">
+                <div class="flex flex-col lg:flex-row justify-between gap-4">
+                    <div class="flex items-center gap-2 w-full lg:w-auto relative">
+                        <i data-lucide="search" class="w-5 h-5 text-gray-400 absolute left-3"></i>
+                        <input type="text" id="filterMyRequests" placeholder="Buscar nome ou código..."
+                            class="pl-10 border border-gray-300 rounded-md px-3 py-2 w-full lg:w-80 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button
+                            class="filter-btn active px-3 py-1.5 text-xs font-medium rounded-full border border-blue-200 bg-blue-100 text-blue-800 hover:bg-blue-200 transition"
+                            data-filter="all">Todos</button>
+                        <button
+                            class="filter-btn px-3 py-1.5 text-xs font-medium rounded-full border border-gray-200 bg-white text-slate-600 hover:bg-gray-100 transition"
+                            data-filter="pending">Pendentes</button>
+                        <button
+                            class="filter-btn px-3 py-1.5 text-xs font-medium rounded-full border border-gray-200 bg-white text-slate-600 hover:bg-gray-100 transition"
+                            data-filter="priority10">Prioridade 10</button>
+                        <button
+                            class="filter-btn px-3 py-1.5 text-xs font-medium rounded-full border border-gray-200 bg-white text-slate-600 hover:bg-gray-100 transition"
+                            data-filter="today">Alterados Hoje</button>
+                    </div>
+                </div>
+                <div class="flex justify-end pt-2 border-t border-slate-200">
+                    <button id="saveAllMyRequests"
+                        class="bg-blue-800 hover:bg-blue-700 text-white font-medium px-6 py-2.5 rounded-lg shadow-sm transition-all duration-200 flex items-center gap-2 min-w-[160px] justify-center">
+                        <i data-lucide="save" class="w-4 h-4"></i>
+                        <span>Salvar Alterações</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="border border-gray-200 rounded-lg shadow-sm bg-white overflow-hidden flex flex-col"
+                style="height: 55vh;">
+                <div
+                    class="flex bg-slate-100 border-b border-gray-200 text-xs font-bold text-slate-600 uppercase tracking-wider">
+                    <div class="px-6 py-3 w-24 border-r border-gray-200 shrink-0">Cód.</div>
+                    <div class="px-6 py-3 flex-1">Grupo</div>
+                    <div class="px-6 py-3 w-40 shrink-0">Prioridade</div>
+                    <div class="px-6 py-3 w-48 shrink-0">Sazonalidade (Mês)</div>
+                </div>
+                <div class="overflow-y-auto flex-1" id="myRequestsTableContainer">
+                    <div id="myRequestsList" class="divide-y divide-gray-200">
+                        <div class="px-6 py-10 text-center text-gray-500 text-sm">Carregando...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aba: Calendário Global -->
+    <div id="tab-calendario" class="tab-content space-y-6 hidden">
+        <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 no-print gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">Calendário Oficial 2026</h2>
+                    <p class="text-slate-500 text-sm">Distribuição baseada em inteligência de dados e ajustes manuais.
+                    </p>
+                </div>
+                <div class="flex gap-2">
+                    <button id="generatePdfButton"
+                        class="bg-red-700 hover:bg-red-600 text-white font-medium px-5 py-2 rounded-lg shadow-sm transition-colors flex items-center gap-2">
+                        <i data-lucide="file-text" class="w-4 h-4"></i> Gerar PDF Oficial
+                    </button>
+                </div>
+            </div>
+
+            <!-- BUSCA NO CALENDÁRIO (DUPLA VIA) -->
+            <div id="calendarSearchContainer"
+                class="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-6 flex flex-col md:flex-row gap-4 items-end no-print">
+                <!-- Campo Número -->
+                <div class="w-full md:w-32">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nº</label>
+                    <input type="text" id="searchNum"
+                        class="w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        placeholder="000" maxlength="6">
+                </div>
+
+                <!-- Campo Grupo com Dropdown -->
+                <div class="w-full md:flex-1 relative">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Grupo</label>
+                    <input type="text" id="searchName"
+                        class="w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        placeholder="Digite o nome do grupo..." autocomplete="off">
+
+                    <!-- Dropdown de Sugestões -->
+                    <div id="searchNameDropdown"
+                        class="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto z-50 hidden">
+                        <!-- Itens via JS -->
+                    </div>
+                </div>
+
+                <!-- Botão Pesquisar -->
+                <button id="calendarSearchBtn"
+                    class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md font-medium text-sm flex items-center justify-center gap-2 transition-colors h-[38px]">
+                    <i data-lucide="search" class="w-4 h-4"></i> Pesquisar
+                </button>
+            </div>
+
+            <!-- RESULTADO DA BUSCA -->
+            <div id="calendarSearchResult"
+                class="hidden bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-6 animate-fade-in no-print">
+                <div class="flex items-start gap-3">
+                    <div class="text-blue-600 mt-1"><i data-lucide="calendar-check" class="w-6 h-6"></i></div>
+                    <div>
+                        <h3 class="font-bold text-blue-900 text-sm mb-1">Resultado da Pesquisa</h3>
+                        <p id="calendarSearchResultText" class="text-sm text-blue-800 leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guia Orientativo -->
+            <div id="calendarGuide" class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg mb-6 no-print">
+                <div class="flex items-start gap-3">
+                    <div class="text-indigo-600 mt-1"><i data-lucide="info" class="w-6 h-6"></i></div>
+                    <div>
+                        <h3 class="font-bold text-indigo-900 text-sm mb-2">Entenda a Composição deste Calendário</h3>
+                        <ul class="space-y-2 text-xs text-indigo-800">
+                            <li class="flex items-start gap-2">
+                                <span class="font-bold bg-indigo-100 px-1.5 rounded text-indigo-700">1</span>
+                                <span><strong>Prioridade:</strong> Itens com maior média de prioridade (calculada com
+                                    base nos votos de todas as secretarias) são alocados primeiro.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="font-bold bg-indigo-100 px-1.5 rounded text-indigo-700">2</span>
+                                <span><strong>Sazonalidade Inteligente:</strong> O sistema identifica o mês preferencial
+                                    mais votado pelas unidades (Moda Estatística) e tenta alocar o grupo neste
+                                    mês.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="font-bold bg-indigo-100 px-1.5 rounded text-indigo-700">3</span>
+                                <span><strong>Ajuste Manual (SEFAZ):</strong> A Secretaria Municipal de Fazenda pode
+                                    alterar o cronograma das contratações manualmente, conforme avaliação procedida pela
+                                    Gerencia de Licitações e contratos. Estes ajustes manuais têm peso máximo e "travam"
+                                    o item no mês escolhido, ignorando a lógica automática.</span>
+                            </li>
+                        </ul>
+                        <div id="masterDragHint"
+                            class="hidden mt-3 flex items-center gap-2 text-xs font-bold text-amber-700 bg-amber-100 px-3 py-1.5 rounded-md border border-amber-200 w-fit">
+                            <i data-lucide="move" class="w-4 h-4"></i> Modo Edição Ativo: Arraste os cards para mudar o
+                            mês.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualização Web -->
+            <div id="calendar-print-area" class="space-y-8 select-none"></div>
+        </div>
+    </div>
+
+    <!-- Aba: Grupos (Admin) -->
+    <div id="tab-grupos" class="tab-content space-y-6 hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-6 sticky top-24">
+                    <h2 class="text-lg font-bold text-slate-700 mb-4">Gerenciar Grupo</h2>
+                    <form id="groupForm" class="space-y-4">
+                        <input type="hidden" id="groupId">
+                        <div><label
+                                class="block text-xs font-semibold text-slate-500 uppercase mb-1">Número</label><input
+                                type="text" id="groupNumber" maxlength="6"
+                                class="block w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 text-sm"
+                                placeholder="Ex: 400" required></div>
+                        <div><label
+                                class="block text-xs font-semibold text-slate-500 uppercase mb-1">Nome</label><textarea
+                                id="groupName" rows="3"
+                                class="block w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-blue-500 text-sm"
+                                required></textarea></div>
+                        <div class="flex flex-col gap-2 pt-2">
+                            <button type="submit"
+                                class="w-full bg-blue-700 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg shadow-sm text-sm flex justify-center items-center gap-2"><i
+                                    data-lucide="save" class="w-4 h-4"></i> Salvar</button>
+                            <button type="button" id="cancelGroupEdit"
+                                class="hidden w-full bg-white hover:bg-slate-50 text-slate-700 font-medium py-2 px-4 rounded-lg border border-gray-300 text-sm">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Ferramentas</h3>
+                    <button id="syncDefaultGroups"
+                        class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2 px-4 rounded-lg shadow-sm text-sm flex justify-center items-center gap-2"><i
+                            data-lucide="refresh-cw" class="w-4 h-4"></i> Restaurar Padrões</button>
+
+                    <button id="btnResetCalendar"
+                        class="w-full bg-amber-600 hover:bg-amber-500 text-white font-medium py-2 px-4 rounded-lg shadow-sm text-sm flex justify-center items-center gap-2"><i
+                            data-lucide="rotate-ccw" class="w-4 h-4"></i> Reorganizar Calendário</button>
+                    <button id="btnToggleLock"
+                        class="w-full bg-slate-800 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm text-sm flex justify-center items-center gap-2"><i
+                            data-lucide="lock" class="w-4 h-4"></i> Pausar Solicitações</button>
+
+                    <div class="bg-white p-3 rounded border border-slate-200 mt-2">
+                        <div class="flex items-center gap-2 mb-2 text-indigo-700"><i data-lucide="file-spreadsheet"
+                                class="w-4 h-4"></i> <span class="text-sm font-semibold">Importar CSV</span></div>
+                        <input type="file" id="csvFileInput" accept=".csv"
+                            class="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 mb-2 border border-gray-200 rounded" />
+                        <button id="btnProcessImport"
+                            class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-1.5 px-3 rounded text-xs font-medium">Processar</button>
+                    </div>
+                </div>
+            </div>
+            <div class="lg:col-span-2">
+                <div class="bg-white border border-gray-200 shadow-sm rounded-xl flex flex-col h-full">
+                    <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-xl">
+                        <h3 class="font-bold text-slate-700">Catálogo</h3>
+                        <input type="text" id="filterGroups" placeholder="Filtrar..."
+                            class="bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm w-48 focus:ring-1 focus:ring-blue-500">
+                    </div>
+                    <div class="h-[700px] overflow-y-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-slate-50 sticky top-0 shadow-sm">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-bold text-slate-500 uppercase w-20">Cód.
+                                    </th>
+                                    <th class="px-4 py-2 text-left text-xs font-bold text-slate-500 uppercase">Nome</th>
+                                    <th class="px-4 py-2 text-right text-xs font-bold text-slate-500 uppercase w-24">
+                                        Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="groupsTable" class="bg-white divide-y divide-gray-200 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aba: Análise (Admin) -->
+    <div id="tab-analise" class="tab-content space-y-6 hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-blue-100 text-blue-600 rounded-full"><i data-lucide="layers" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500 uppercase font-bold">Total Grupos</p>
+                    <p id="metricTotalGroups" class="text-2xl font-bold text-slate-800">-</p>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-green-100 text-green-600 rounded-full"><i data-lucide="check-circle-2"
+                        class="w-6 h-6"></i></div>
+                <div>
+                    <p class="text-xs text-slate-500 uppercase font-bold">Com Demanda</p>
+                    <p id="metricDemandGroups" class="text-2xl font-bold text-slate-800">-</p>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-orange-100 text-orange-600 rounded-full"><i data-lucide="users" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500 uppercase font-bold">Comuns (>2)</p>
+                    <p id="metricCommonRequests" class="text-2xl font-bold text-slate-800">-</p>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
+                <div class="p-3 bg-purple-100 text-purple-600 rounded-full"><i data-lucide="user" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500 uppercase font-bold">Específicos</p>
+                    <p id="metricSpecificRequests" class="text-2xl font-bold text-slate-800">-</p>
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-end"><button id="exportReportButton"
+                class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2 rounded-lg shadow-sm flex items-center gap-2 text-sm transition-colors"><i
+                    data-lucide="download" class="w-4 h-4"></i> Baixar CSV</button></div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-5">
+                <h3 class="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2"><i data-lucide="users"
+                        class="w-5 h-5 text-orange-500"></i> Pedidos Comuns</h3>
+                <div class="overflow-y-auto max-h-[400px] border rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-200 text-sm">
+                        <thead class="bg-slate-50 sticky top-0">
+                            <tr>
+                                <th>Grp</th>
+                                <th>Nome</th>
+                                <th class="text-center">Qtd</th>
+                                <th class="text-center">Média</th>
+                            </tr>
+                        </thead>
+                        <tbody id="commonRequestsList" class="divide-y divide-gray-200 bg-white"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-5">
+                <h3 class="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2"><i data-lucide="user"
+                        class="w-5 h-5 text-purple-500"></i> Pedidos Específicos</h3>
+                <div class="overflow-y-auto max-h-[400px] border rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-200 text-sm">
+                        <thead class="bg-slate-50 sticky top-0">
+                            <tr>
+                                <th>Grp</th>
+                                <th>Nome</th>
+                                <th class="text-center">Qtd</th>
+                                <th class="text-center">Média</th>
+                            </tr>
+                        </thead>
+                        <tbody id="specificRequestsList" class="divide-y divide-gray-200 bg-white"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-5">
+            <h3 class="text-lg font-bold text-slate-700 mb-4">Detalhamento por Secretaria</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left">Unidade</th>
+                            <th class="px-4 py-2 text-center">Itens Solicitados</th>
+                            <th class="px-4 py-2 text-center">Soma Prioridade</th>
+                            <th class="px-4 py-2 text-center">Média Global</th>
+                        </tr>
+                    </thead>
+                    <tbody id="unitDetailsList" class="bg-white divide-y divide-gray-200"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aba: Usuários (Master Only) -->
+    <div id="tab-usuarios" class="tab-content space-y-6 hidden">
+        <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-6">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Gerenciamento de Usuários</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                    <h3 class="font-bold text-slate-700 mb-4">Cadastrar Usuário</h3>
+                    <form id="userRegisterForm" class="space-y-4">
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase">Login</label><input
+                                type="text" id="regUsername" class="w-full border border-gray-300 rounded p-2 text-sm"
+                                required></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase">Senha Inicial</label><input
+                                type="text" id="regPassword" class="w-full border border-gray-300 rounded p-2 text-sm"
+                                required></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase">Nome Completo</label><input
+                                type="text" id="regName" class="w-full border border-gray-300 rounded p-2 text-sm"
+                                placeholder="Ex: João da Silva" required></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase">Cargo /
+                                Função</label><input type="text" id="regCargo"
+                                class="w-full border border-gray-300 rounded p-2 text-sm"
+                                placeholder="Ex: Chefe de Compras" required></div>
+                        <div><label
+                                class="flex items-center gap-2 cursor-pointer bg-indigo-50 p-2 rounded border border-indigo-100"><input
+                                    type="checkbox" id="regIsAdmin"
+                                    class="rounded text-indigo-600 w-4 h-4 focus:ring-indigo-500"><span
+                                    class="text-sm font-bold text-indigo-800">Acesso Administrativo
+                                    (Grupos/Análise)</span></label></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-2">Unidades de
+                                Acesso</label>
+                            <div id="regUnitsContainer"
+                                class="w-full border border-gray-300 rounded p-2 text-sm bg-white h-48 overflow-y-auto space-y-2">
+                                <!-- Checkboxes JS --></div>
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-blue-700 text-white py-2 rounded shadow hover:bg-blue-600 font-medium">Criar
+                            Usuário</button>
+                    </form>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="border rounded-lg overflow-hidden h-[500px] overflow-y-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead class="bg-slate-100 sticky top-0">
+                                <tr>
+                                    <th class="px-4 py-2 text-left">Login</th>
+                                    <th class="px-4 py-2 text-left">Nome</th>
+                                    <th class="px-4 py-2 text-left">Cargo</th>
+                                    <th class="px-4 py-2 text-left">Unidades</th>
+                                    <th class="px-4 py-2 text-center">Perfil</th>
+                                    <th class="px-4 py-2 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- Alerta Flutuante: Alterações Pendentes -->
+<div id="unsavedAlert"
+    class="fixed bottom-6 right-6 bg-yellow-50 border border-yellow-400 text-yellow-800 p-4 rounded-xl shadow-2xl z-50 hidden animate-slide-up flex items-center gap-4 max-w-sm">
+    <div class="flex items-center gap-3">
+        <div class="bg-yellow-200 p-2 rounded-full text-yellow-700">
+            <i data-lucide="alert-circle" class="w-6 h-6"></i>
+        </div>
+        <div>
+            <p class="font-bold text-sm">Alterações Pendentes</p>
+            <p class="text-xs mt-1">Você tem <span id="unsavedCount" class="font-bold">0</span> item(ns) não salvos.</p>
+        </div>
+    </div>
+    <button id="btnFloatSave"
+        class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-lg text-xs shadow-sm transition-colors">
+        Salvar Agora
+    </button>
+</div>
+
+<!-- TEMPLATE PDF (Oculto) -->
+<div id="pdfTemplate" class="hidden">
+    <div class="pdf-container font-sans p-8 bg-white text-slate-900" style="width: 700px; margin: 0 auto;">
+
+        <!-- Cabeçalho Oficial -->
+        <div class="flex items-center justify-between border-b-2 border-gray-800 pb-6 mb-8">
+            <div class="flex items-center gap-4">
+                <!-- Brasão SVG Simples -->
+                <div id="pdfLogoContainer"
+                    class="w-[70px] h-[70px] bg-white rounded-full p-1 shadow-sm flex items-center justify-center overflow-hidden relative">
+                    <!-- SVG Fallback (Garantido) -->
+                    <svg class="w-full h-full absolute inset-0 p-1" viewBox="0 0 100 100"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 5 L90 25 V55 C90 80 50 95 50 95 C50 95 10 80 10 55 V25 L50 5 Z" fill="#e2e8f0"
+                            stroke="#1e3a8a" stroke-width="2" />
+                        <path d="M50 15 L50 85 M20 40 L80 40" stroke="#1e3a8a" stroke-width="2" opacity="0.2" />
+                        <text x="50" y="65" font-family="serif" font-weight="bold" font-size="40" text-anchor="middle"
+                            fill="#1e3a8a">C</text>
+                    </svg>
+                    <!-- Imagem Externa -->
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b2/Bras%C3%A3o_de_Curvelo.jpg"
+                        alt="Brasão Curvelo" class="w-full h-full object-contain relative z-10" crossorigin="anonymous"
+                        onerror="this.style.display='none'">
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold uppercase tracking-wider">Prefeitura Municipal de Curvelo</h1>
+                    <h2 class="text-sm font-medium text-gray-600">Secretaria Municipal de Fazenda</h2>
+                </div>
+            </div>
+            <div class="text-right">
+                <h3 class="text-lg font-bold text-blue-900">Calendário de Compras 2026</h3>
+                <p class="text-xs text-gray-500 mt-1">Gerado em: <span id="pdfDate"></span></p>
+            </div>
+        </div>
+
+        <!-- Conteúdo do Calendário -->
+        <div id="pdfContentArea" class="space-y-6">
+            <!-- Inserido via JS (Guia + Calendário) -->
+        </div>
+
+        <!-- Rodapé com Assinaturas -->
+        <div class="mt-16 pt-8 border-t border-gray-300">
+            <div class="flex justify-center px-8">
+                <div class="text-center">
+                    <div class="w-64 border-t border-black mb-2"></div>
+                    <p class="text-xs font-bold uppercase">Vitor Augusto Assis Barcelos</p>
+                    <p class="text-[10px] text-gray-500">Secretário de Fazenda</p>
+                </div>
+            </div>
+            <p class="text-[10px] text-center text-gray-400 mt-8">Documento gerado eletronicamente pelo Sistema de
+                Planejamento de Compras.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modais de Sistema (Login, Senha, Confirmação) -->
+<div id="loginModal" class="fixed inset-0 bg-slate-900 bg-opacity-95 flex items-center justify-center z-[9999]">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full transform transition-all scale-100">
+        <div class="text-center mb-8">
+            <div class="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+                <i data-lucide="lock" class="w-10 h-10 text-blue-700"></i>
+            </div>
+            <h2 class="text-2xl font-extrabold text-slate-800">Acesso Restrito</h2>
+            <p class="text-slate-500 text-sm mt-2">Prefeitura de Curvelo - Compras 2026</p>
+        </div>
+        <!-- Login -->
+        <form id="loginForm" class="space-y-5">
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Login</label>
+                <div class="relative"><input type="text" id="loginUser"
+                        class="block w-full border border-gray-300 rounded-lg py-3 pl-10 pr-3 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+                        placeholder="seu.usuario" required><i data-lucide="user"
+                        class="w-5 h-5 text-gray-400 absolute left-3 top-3"></i></div>
+            </div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Senha</label>
+                <div class="relative"><input type="password" id="loginPass"
+                        class="block w-full border border-gray-300 rounded-lg py-3 pl-10 pr-3 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+                        placeholder="••••••" required><i data-lucide="key"
+                        class="w-5 h-5 text-gray-400 absolute left-3 top-3"></i></div>
+            </div>
+            <button type="submit" id="btnLoginSubmit"
+                class="w-full bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700 text-white font-bold py-3 rounded-lg shadow-lg transform hover:-translate-y-0.5 transition-all">Entrar</button>
+            <div id="loginError"
+                class="text-red-500 text-center text-sm hidden bg-red-50 py-2 rounded border border-red-100 mt-2"></div>
+        </form>
+        <!-- Seleção de Unidade -->
+        <div id="loginUnitSelection" class="hidden space-y-4">
+            <h3 class="text-center text-lg font-bold text-slate-700">Selecione a Unidade</h3>
+            <p class="text-center text-xs text-slate-500">Você possui acesso a múltiplas secretarias.</p>
+            <div id="unitButtonsContainer" class="space-y-2 max-h-60 overflow-y-auto"></div><button id="backToLogin"
+                class="w-full text-slate-500 text-sm py-2 hover:text-slate-800 mt-2">Voltar</button>
+        </div>
+    </div>
+</div>
+
+<div id="passwordModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full">
+        <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="lock"
+                class="w-5 h-5"></i> Alterar Senha</h3>
+        <form id="changePassForm" class="space-y-4">
+            <div><label class="block text-xs font-bold text-slate-500 mb-1">Senha Atual</label><input type="password"
+                    id="cpCurrent" class="w-full border rounded p-2" required></div>
+            <div><label class="block text-xs font-bold text-slate-500 mb-1">Nova Senha</label><input type="password"
+                    id="cpNew" class="w-full border rounded p-2" required></div>
+            <div class="flex gap-2 justify-end pt-2"><button type="button"
+                    onclick="document.getElementById('passwordModal').classList.add('hidden')"
+                    class="px-4 py-2 text-sm text-slate-600 hover:bg-gray-100 rounded">Cancelar</button><button
+                    type="submit"
+                    class="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button></div>
+        </form>
+    </div>
+</div>
+
+<div id="deleteConfirmModal"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden no-print p-4">
+    <div class="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full">
+        <div class="flex flex-col items-center text-center">
+            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4"><i
+                    data-lucide="alert-triangle" class="w-6 h-6 text-red-600"></i></div>
+            <h3 class="text-lg font-bold text-slate-800">Excluir?</h3>
+            <p class="text-sm text-slate-500 my-2" id="deleteMsg">Tem certeza?</p>
+            <div class="flex gap-3 w-full mt-4"><button type="button" id="cancelDelete"
+                    class="flex-1 bg-white border border-gray-300 text-slate-700 py-2 rounded-lg font-medium">Não</button><button
+                    type="button" id="confirmDelete"
+                    class="flex-1 bg-red-600 text-white py-2 rounded-lg font-medium hover:bg-red-700">Sim,
+                    Excluir</button></div>
+        </div>
+    </div>
+</div>
+
+<div id="importConfirmModal"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden no-print p-4">
+    <div class="bg-white rounded-xl shadow-xl p-6 max-w-lg w-full">
+        <div class="flex items-center gap-3 mb-4 text-indigo-700"><i data-lucide="info" class="w-6 h-6"></i>
+            <h3 class="text-lg font-bold">Conflito de Importação</h3>
+        </div>
+        <div id="importConflictMessage" class="text-sm text-slate-600 mb-6"></div>
+        <div class="flex flex-col sm:flex-row justify-end gap-3"><button id="btnImportCancel"
+                class="bg-white border border-gray-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium">Cancelar</button><button
+                id="btnImportSkipExisting"
+                class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Ignorar
+                Existentes</button><button id="btnImportOverwrite"
+                class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700">Sobrescrever
+                Tudo</button></div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script type="module" src="script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,202 @@
+/* --- Estilos de Impressão (Browser Nativo) --- */
+@media print {
+    header, nav, #progressBarContainer, .filters-toolbar, #calendarGuide, #profileModal, #deleteConfirmModal, #importConfirmModal, #loginModal, #passwordModal, #unsavedAlert, .no-print, #userProfileBtn, #unitSelectorContainer, .tab-content > div > div:first-child button, #calendarSearchContainer, #calendarSearchResult { 
+        display: none !important; 
+    }
+
+    body {
+        background-color: white;
+        color: black;
+        font-size: 10pt;
+    }
+
+    main {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        box-shadow: none !important;
+    }
+
+    .tab-content {
+        display: none !important;
+    }
+
+    #tab-calendario {
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    #tab-calendario .bg-white {
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    .calendar-month {
+        page-break-inside: avoid;
+        border: 1px solid #ccc;
+        margin-bottom: 15px;
+        padding: 10px;
+    }
+    
+    #calendarGuide {
+        display: block !important;
+        border: 1px solid #ddd;
+        margin-bottom: 20px;
+    }
+}
+
+/* --- Estilos Gerais UI --- */
+.tab-button {
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+}
+.tab-button.active {
+    border-bottom-color: #1d4ed8; 
+    color: #1d4ed8;
+    font-weight: 600;
+}
+
+.unit-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: #004a91; 
+    background-color: white; 
+    border-radius: 9999px; 
+    width: 48px; 
+    height: 48px;
+    font-size: 16px; 
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.unit-avatar.long-text {
+    font-size: 11px;
+    letter-spacing: -0.5px;
+}
+.unit-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    border-color: #fbbf24;
+}
+
+/* Logo Upload Styles */
+.logo-container {
+    width: 56px;
+    height: 56px;
+    background-color: white;
+    border-radius: 50%;
+    padding: 4px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    border: 2px solid #bfdbfe; 
+    transition: all 0.2s;
+}
+
+.logo-container.editable:hover {
+    border-color: #fbbf24; 
+    cursor: pointer;
+}
+
+.logo-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.logo-container.editable:hover .logo-overlay {
+    opacity: 1;
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Animações */
+@keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.animate-slide-up {
+    animation: slideUp 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+    animation: fadeIn 0.2s ease-out forwards;
+}
+
+.pdf-container {
+    width: 700px !important; 
+    margin: 0 auto;
+    background-color: white;
+    color: #1e293b;
+}
+
+/* Drag and Drop Styles */
+.draggable-card {
+    cursor: grab;
+    touch-action: none;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+.draggable-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
+    z-index: 10;
+}
+.draggable-card.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+    transform: scale(1.02);
+}
+.drop-zone {
+    transition: all 0.2s ease;
+}
+.drop-zone.drag-over {
+    background-color: #eff6ff !important;
+    border: 2px dashed #3b82f6 !important;
+    transform: scale(1.01);
+}
+
+.progress-shine {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: shine 2s infinite;
+}
+@keyframes shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Estilo para Dropdown de Sugestões */
+.suggestion-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    border-bottom: 1px solid #f1f5f9;
+}
+.suggestion-item:hover {
+    background-color: #eff6ff;
+    color: #1e40af;
+}
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+.suggestion-highlight {
+    font-weight: bold;
+    color: #2563eb;
+}
